@@ -3,7 +3,7 @@ from scrapy_reviews.items import KBBReviewItem
 
 
 class KBBReviewSpider(scrapy.Spider):
-    name = "kbb_reviews"
+    name = "kbb_lexus"
 
     def start_requests(self):
         urls = [
@@ -100,13 +100,13 @@ class KBBReviewSpider(scrapy.Spider):
             review["date"] = extract_with_css(sections[0], "meta[itemprop~=datePublished]::attr(content)")
             review["owned_mileage"] = get_mileage(sections[0], "p.duration > strong::text")
             ratings = get_ratings(sections[0], "dl > dd")
-            review["ratings_overall"] = ratings["overall"]
-            review["ratings_value"] = ratings["value"]
-            review["ratings_reliability"] = ratings["reliability"]
-            review["ratings_quality"] = ratings["quality"]
-            review["ratings_performance"] = ratings["performance"]
-            review["ratings_styling"] = ratings["styling"]
-            review["ratings_comfort"] = ratings["comfort"]
+            review["ratings"]["overall"] = ratings["overall"]
+            review["ratings"]["value"] = ratings["value"]
+            review["ratings"]["reliability"] = ratings["reliability"]
+            review["ratings"]["quality"] = ratings["quality"]
+            review["ratings"]["performance"] = ratings["performance"]
+            review["ratings"]["styling"] = ratings["styling"]
+            review["ratings"]["comfort"] = ratings["comfort"]
             tmp = get_pros_cons_rc(sections[1])
             review["pros"] = tmp["pros"]
             review["cons"] = tmp["cons"]

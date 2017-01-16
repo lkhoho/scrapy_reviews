@@ -102,11 +102,11 @@ class ExportToCsvPipeline(object):
             others_writer = csv.writer(self.others_fp, delimiter=",", quoting=csv.QUOTE_ALL)
 
             if spider.name.startswith("kbb"):
-                others_writer.writerow(KBBReviewItem.headers())
+                others_writer.writerow(KBBReviewItem.get_column_headers())
             elif spider.name.startswith("edmunds"):
-                others_writer.writerow(EdmundsReviewItem.headers())
+                others_writer.writerow(EdmundsReviewItem.get_column_headers())
             elif spider.name.startswith("orbitz"):
-                others_writer.writerow(OrbitzReviewItem.headers())
+                others_writer.writerow(OrbitzReviewItem.get_column_headers())
         except OSError as exc:
             print("Error: opening others file {} failed. Exception: {}".format(others_filename, exc))
 
@@ -120,20 +120,13 @@ class ExportToCsvPipeline(object):
         features_writer = csv.writer(self.features_fp, quoting=csv.QUOTE_ALL)
         features_writer.writerow(item["content"].split(","))
         others_writer = csv.writer(self.others_fp, delimiter=",", quoting=csv.QUOTE_ALL)
-        values = []
 
         if type(item).__name__ == "KBBReviewItem":
-            for k in KBBReviewItem.headers():
-                values.append(vars(item)["_values"][k])
-            others_writer.writerow(values)
+            others_writer.writerow(item.get_column_values())
         elif type(item).__name__ == "EdmundsReviewItem":
-            for k in EdmundsReviewItem.headers():
-                values.append(vars(item)["_values"][k])
-            others_writer.writerow(values)
+            others_writer.writerow(item.get_column_values())
         elif type(item).__name__ == "OrbitzReviewItem":
-            for k in OrbitzReviewItem.headers():
-                values.append(vars(item)["_values"][k])
-            others_writer.writerow(values)
+            others_writer.writerow(item.get_column_values())
         return item
 
     @staticmethod

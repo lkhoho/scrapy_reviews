@@ -17,8 +17,7 @@ class EdmundsReviewHTMLParser(HTMLParser):
 
 
 class EdmundsReviewSpider(scrapy.Spider):
-    name = "edmunds_reviews"
-    # base_url = "https://www.edmunds.com/honda/cr-v/2015/suv/consumer-reviews"
+    name = "edmunds_honda"
     base_url = "https://www.edmunds.com/honda/accord/2017/consumer-reviews"
     num_pages = 62
     reviews = {}
@@ -88,12 +87,12 @@ class EdmundsReviewSpider(scrapy.Spider):
             start = detail_str.find("<span class=\"link\" id=\"crr_rate_up\">", start)
             end = detail_str.find("<span class=\"link\" id=\"crr_rate_down\">", start)
             recommend_up_parser.feed(detail_str[start:end])
-            review["recommend_up_count"] = int(recommend_up_parser.result[0]) if len(recommend_up_parser.result) > 0 else 0
+            review["recommend_count"]["up"] = int(recommend_up_parser.result[0]) if len(recommend_up_parser.result) > 0 else 0
 
             # get recommend down count
             recommend_down_parser = EdmundsReviewHTMLParser()
             start = detail_str.find("<span class=\"link\" id=\"crr_rate_down\">", start)
             end = detail_str.find("</div>", start)
             recommend_down_parser.feed(detail_str[start:end])
-            review["recommend_down_count"] = int(recommend_down_parser.result[0]) if len(recommend_down_parser.result) > 0 else 0
+            review["recommend_count"]["down"] = int(recommend_down_parser.result[0]) if len(recommend_down_parser.result) > 0 else 0
             yield review

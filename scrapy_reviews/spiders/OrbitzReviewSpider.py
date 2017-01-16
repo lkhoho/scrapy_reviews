@@ -27,6 +27,7 @@ class OrbitzReviewSpider(scrapy.Spider):
             val = selector.xpath("div[@class='summary']/blockquote/text()").re(r"for .+")
             if len(val) > 0:
                 review["recommend_for"] = val[0].replace("for ", "")
+                review["will_recommend"] = 1
             val = selector.xpath("div[@class='summary']/blockquote/div/text()").extract_first().strip().replace("\xa0", " ")
             m = re.match(r"by\s*([\w\s]+) from\s*([\w\s,]+)", val)
             if m is not None:
@@ -45,17 +46,17 @@ class OrbitzReviewSpider(scrapy.Spider):
             for remark_selector in remark_selectors:
                 k = remark_selector.xpath("strong/text()").extract_first().lower().replace(":", "")
                 v = "".join(remark_selector.xpath("text()").extract()).strip().replace("\r\n", " ")
-                review["remark_" + k] = v
+                review["remark"][k] = v
             response_selector = selector.xpath("div[@class='details']/div[@class='management-response']")
             if len(response_selector) > 0:
                 response_selector = response_selector[0]
-                review["response_title"] = response_selector.xpath("div[@class='title']/text()").extract_first().strip()
-                review["response_content"] = response_selector.xpath("div[@class='text']/text()").extract_first().strip()
+                review["response"]["title"] = response_selector.xpath("div[@class='title']/text()").extract_first().strip()
+                review["response"]["content"] = response_selector.xpath("div[@class='text']/text()").extract_first().strip()
                 val = response_selector.xpath("div[@class='date-posted']/text()").extract_first().strip()
                 m = re.match(r"(.+)\sby\s*(.+)", val)
                 if m is not None:
-                    review["response_date"] = m.group(1)
-                    review["response_author"] = m.group(2)
+                    review["response"]["date"] = m.group(1)
+                    review["response"]["author"] = m.group(2)
                 else:
-                    review["response_author"] = re.match(r"by\s*(.+)", val).group(1).strip()
+                    review["response"]["author"] = re.match(r"by\s*(.+)", val).group(1).strip()
             yield review
