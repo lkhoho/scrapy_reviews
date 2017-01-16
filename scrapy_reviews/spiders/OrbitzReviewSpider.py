@@ -9,6 +9,7 @@ class OrbitzReviewSpider(scrapy.Spider):
     num_reviews_per_page = 10
     num_reviews = 5403
     num_pages = (num_reviews + num_reviews_per_page - 1) // 10
+    is_pos_neg_separated = True
 
     def start_requests(self):
         urls = []
