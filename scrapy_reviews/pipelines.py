@@ -5,6 +5,7 @@
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
 import re
+import simplejson
 import csv
 import logging
 from stemming.porter2 import stem
@@ -80,8 +81,32 @@ class StemmingReviewsPipeline(object):
         return item
 
 
+class ExportToJsonPipeline(object):
+    """ Export items in JSON format. """
+
+    def __init__(self):
+        self.items = []
+        self.fp = None
+        self.logger = logging.getLogger(__name__)
+
+    def open_spider(self, spider):
+        filename = spider.name + ".json"
+        try:
+            self.fp = open(filename, "a")
+        except OSError as exc:
+            self.logger.error("Error: opening JSON file {} failed. Exception: {}".format(filename, exc))
+
+    def close_spider(self, spider):
+        simplejson.dump(self.items, self.fp)
+        self.fp.close()
+
+    def process_item(self, item, spider):
+        self.items.append(dict(item))
+        return item
+
+
 class ExportToCsvPipeline(object):
-    """ Export items. """
+    """ Export items in CSV format. """
 
     def __init__(self):
         self.pos_features_fp = None
