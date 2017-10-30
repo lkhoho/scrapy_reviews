@@ -12,23 +12,50 @@ from stemming.porter2 import stem
 from .items import KBBReviewItem, EdmundsReviewItem, OrbitzReviewItem
 
 
-class StopwordsRemovalPipeline(object):
-    """ Remove stopwords and generate features for review content. """
+class TokenizationPipeline(object):
+    """ Tokenize review item content. """
 
-    stopwords_filename = "stopwords.txt"
-    stopwords_fp = None
-    stopwords = set()
-    tokenization_regex = r"[\s()<>[\]{}|,.:;?!&$'\"]"
-    logger = logging.getLogger(__name__)
-
-    def open_spider(self, spider):
-        StopwordsRemovalPipeline.__populate_stopwords()
-
-    def close_spider(self, spider):
-        pass
+    def __init__(self):
+        self.tokenization_regex = r"[\s()<>[\]{}|,.:;?!&$'\"]"
 
     def process_item(self, item, spider):
-        text = item["content"]
+        text = item["content"].lower()
+        text = re.sub(r"['?,\-\\!\"]", " ", text)
+        item["content"] = self.tokenize(text)
+        return item
+
+    def tokenize(self, text):
+        tokens = []
+        words = re.split(self.tokenization_regex, text.lower())
+        for word in words:
+            stripped = word.strip()
+            if len(stripped) > 1:
+                tokens.append(stripped)
+        return tokens
+
+
+class RemoveStopwordsPipeline(object):
+    """ Remove stopwords and generate features for review content. """
+
+    def __init__(self):
+        self.stopwords_filename = "stopwords.txt"
+        self.stopwords_fp = None
+        self.stopwords = set()
+        self.logger = logging.getLogger(__name__)
+
+    def open_spider(self, spider):
+        try:
+            self.stopwords_fp = open(self.stopwords_filename)
+        except OSError as exc:
+            self.logger.error("Error: opening stopwords file {} failed. Exception: {}".format(self.stopwords_filename, exc))
+
+        for word in self.stopwords_fp:
+            self.stopwords.add(word)
+
+        self.stopwords_fp.close()
+
+    def process_item(self, item, spider):
+        text = item["content"].lower()
 
         # remove comma in numbers
         numbers = re.findall(r"\s(\d+[,\d]*\d+)\s?", text)
@@ -37,32 +64,12 @@ class StopwordsRemovalPipeline(object):
 
         # remove other commas
         text = re.sub(r"['?,\-\\!\"]", " ", text)
-        tokens = StopwordsRemovalPipeline.__tokenize(text)
-        item["content"] = tokens
+        word_arr = text.split()
+        for word in word_arr:
+            if word in self.stopwords:
+                word_arr.remove(word)
+        item["content"] = " ".join(word_arr)
         return item
-
-    @staticmethod
-    def __populate_stopwords():
-        try:
-            StopwordsRemovalPipeline.stopwords_fp = open(StopwordsRemovalPipeline.stopwords_filename)
-        except OSError as exc:
-            StopwordsRemovalPipeline.logger.error("Error: opening stopwords file {} failed. Exception: {}".format(
-                StopwordsRemovalPipeline.stopwords_filename, exc))
-
-        for word in StopwordsRemovalPipeline.stopwords_fp:
-            StopwordsRemovalPipeline.stopwords.add(word.strip().lower())
-
-        StopwordsRemovalPipeline.stopwords_fp.close()
-
-    @staticmethod
-    def __tokenize(text: str) -> list:
-        tokens = []
-        words = re.split(StopwordsRemovalPipeline.tokenization_regex, text.lower())
-        for word in words:
-            stripped = word.strip()
-            if len(stripped) > 1 and (stripped not in StopwordsRemovalPipeline.stopwords):
-                tokens.append(stripped)
-        return tokens
 
 
 class StemmingReviewsPipeline(object):
@@ -81,8 +88,8 @@ class StemmingReviewsPipeline(object):
         return item
 
 
-class ExportToJsonPipeline(object):
-    """ Export items in JSON format. """
+class SaveRawItemPipeline(object):
+    """ Save raw items in JSON format. """
 
     def __init__(self):
         self.items = []
@@ -90,7 +97,7 @@ class ExportToJsonPipeline(object):
         self.logger = logging.getLogger(__name__)
 
     def open_spider(self, spider):
-        filename = spider.name + ".json"
+        filename = spider.name + "_raw.json"
         try:
             self.fp = open(filename, "a")
         except OSError as exc:
@@ -105,7 +112,7 @@ class ExportToJsonPipeline(object):
         return item
 
 
-class ExportToCsvPipeline(object):
+class SaveToCsvPipeline(object):
     """ Export items in CSV format. """
 
     def __init__(self):
@@ -165,7 +172,7 @@ class ExportToCsvPipeline(object):
         elif type(item).__name__ == "OrbitzReviewItem":
             others_writer.writerow(item.get_column_values())
 
-        text = ExportToCsvPipeline.__tokens_to_str(item["content"])
+        text = SaveToCsvPipeline.__tokens_to_str(item["content"])
         item["content"] = text
         if getattr(spider, "is_pos_neg_separated", False):
             try:
@@ -185,11 +192,11 @@ class ExportToCsvPipeline(object):
         return item
 
     @staticmethod
-    def __tokens_to_str(tokens: list) -> str:
+    def __tokens_to_str(tokens):
         s = ""
         if len(tokens) > 0:
             s += tokens[0]
             for i in range(1, len(tokens)):
-                s += ", "
+                s += ","
                 s += tokens[i]
         return s
