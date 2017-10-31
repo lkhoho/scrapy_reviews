@@ -19,6 +19,10 @@ class BasicReviewItem(scrapy.Item):
         self["content"] = ""
 
     @staticmethod
+    def get_column_header_index(header: str) -> int:
+        return BasicReviewItem.get_column_headers().index(header)
+
+    @staticmethod
     def get_column_headers() -> list:
         return ["author", "date", "title"]
 
@@ -192,3 +196,98 @@ class TripAdvisorReviewItem(BasicReviewItem):
     review_count = scrapy.Field()
     contribution_count = scrapy.Field()
     helpful_votes = scrapy.Field()
+
+
+class BizRateReviewItem(BasicReviewItem):
+    """ BizRate store review info. """
+
+    def __init__(self):
+        super().__init__()
+        BizRateReviewItem.TITLE_INDEX = BasicReviewItem.get_column_header_index("title")
+        self["overall_satisfaction"] = 0
+        self["would_shop_here_again"] = 0
+        self["likelihood_to_recommend"] = 0
+        self["ratings_site_experience"] = {
+            "ease_of_finding": -1,
+            "design_site": -1,
+            "satisfaction_checkout": -1,
+            "product_selection": -1,
+            "clarity_product_info": -1,
+            "charges_stated_clearly": -1,
+            "price_relative_other_retailers": -1,
+            "shipping_charges": -1,
+            "variety_shipping_options": -1
+        }
+        self["ratings_after_purchase"] = {
+            "on_time_delivery": -1,
+            "order_tracking": -1,
+            "product_met_expectations": -1,
+            "customer_support": -1,
+            "product_availability": -1,
+            "returns_process": -1
+        }
+        self["review_after_purchase"] = BasicReviewItem()
+
+    @staticmethod
+    def get_column_headers() -> list:
+        headers = super(BizRateReviewItem, BizRateReviewItem).get_column_headers()
+        del headers[BizRateReviewItem.TITLE_INDEX]  # remove 'title'
+        return [("review_site_experience_" + header) for header in headers] + [
+            "overall_satisfaction", "would_shop_here_again", "likelihood_to_recommend",
+
+            "ratings_site_experience_ease_of_finding",
+            "ratings_site_experience_design_site",
+            "ratings_site_experience_satisfaction_checkout",
+            "ratings_site_experience_product_selection",
+            "ratings_site_experience_clarity_product_info",
+            "ratings_site_experience_charges_stated_clearly",
+            "ratings_site_experience_price_relative_other_retailers",
+            "ratings_site_experience_shipping_charges",
+            "ratings_site_experience_variety_shipping_options",
+
+            "ratings_after_purchase_on_time_delivery",
+            "ratings_after_purchase_order_tracking",
+            "ratings_after_purchase_product_met_expectations",
+            "ratings_after_purchase_customer_support",
+            "ratings_after_purchase_product_availability",
+            "ratings_after_purchase_returns_process",
+
+            "review_after_purchase_author",
+            "review_after_purchase_date",
+            "review_after_purchase_content"
+        ]
+
+    def get_column_values(self) -> list:
+        values = super().get_column_values()
+        del values[BizRateReviewItem.TITLE_INDEX]  # remove 'title'
+        return values + [
+            self["overall_satisfaction"], self["would_shop_here_again"], self["likelihood_to_recommend"],
+
+            self["ratings_site_experience"]["ease_of_finding"],
+            self["ratings_site_experience"]["design_site"],
+            self["ratings_site_experience"]["satisfaction_checkout"],
+            self["ratings_site_experience"]["product_selection"],
+            self["ratings_site_experience"]["clarity_product_info"],
+            self["ratings_site_experience"]["charges_stated_clearly"],
+            self["ratings_site_experience"]["price_relative_other_retailers"],
+            self["ratings_site_experience"]["shipping_charges"],
+            self["ratings_site_experience"]["variety_shipping_options"],
+
+            self["ratings_after_purchase"]["on_time_delivery"],
+            self["ratings_after_purchase"]["order_tracking"],
+            self["ratings_after_purchase"]["product_met_expectations"],
+            self["ratings_after_purchase"]["customer_support"],
+            self["ratings_after_purchase"]["product_availability"],
+            self["ratings_after_purchase"]["returns_process"],
+
+            self["review_after_purchase"]["author"],
+            self["review_after_purchase"]["date"],
+            self["review_after_purchase"]["content"],
+        ]
+
+    overall_satisfaction = scrapy.Field()
+    would_shop_here_again = scrapy.Field()
+    likelihood_to_recommend = scrapy.Field()
+    ratings_site_experience = scrapy.Field()
+    ratings_after_purchase = scrapy.Field()
+    review_after_purchase = scrapy.Field()

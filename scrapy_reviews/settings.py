@@ -67,10 +67,10 @@ ROBOTSTXT_OBEY = True
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
     'scrapy_reviews.pipelines.SaveRawItemPipeline': 100,
-    'scrapy_reviews.pipelines.RemoveStopwordsPipeline': 200,
-    'scrapy_reviews.pipelines.TokenizationPipeline': 300,
-    'scrapy_reviews.pipelines.StemmingReviewsPipeline': 400,
-    'scrapy_reviews.pipelines.SaveToCsvPipeline': 500,
+    # 'scrapy_reviews.pipelines.RemoveStopwordsPipeline': 200,
+    # 'scrapy_reviews.pipelines.TokenizationPipeline': 300,
+    # 'scrapy_reviews.pipelines.StemmingReviewsPipeline': 400,
+    # 'scrapy_reviews.pipelines.SaveToCsvPipeline': 500,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)

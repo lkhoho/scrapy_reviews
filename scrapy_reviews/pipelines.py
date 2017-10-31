@@ -9,6 +9,7 @@ import simplejson
 import csv
 import logging
 from stemming.porter2 import stem
+from scrapy.utils.serialize import ScrapyJSONEncoder
 from .items import KBBReviewItem, EdmundsReviewItem, OrbitzReviewItem
 
 
@@ -94,6 +95,7 @@ class SaveRawItemPipeline(object):
     def __init__(self):
         self.items = []
         self.fp = None
+        self.encoder = ScrapyJSONEncoder()
         self.logger = logging.getLogger(__name__)
 
     def open_spider(self, spider):
@@ -108,7 +110,7 @@ class SaveRawItemPipeline(object):
         self.fp.close()
 
     def process_item(self, item, spider):
-        self.items.append(dict(item))
+        self.items.append(self.encoder.encode(item))
         return item
 
 
