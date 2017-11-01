@@ -8,8 +8,8 @@ class BizRateReviewSpider(scrapy.Spider):
 
     def start_requests(self):
         urls = [
-            # "http://www.bizrate.com/reviews/overstock.com/23819/"
-            "http://www.bizrate.com/reviews/ld-products/27964/"
+            "http://www.bizrate.com/reviews/overstock.com/23819/"
+            # "http://www.bizrate.com/reviews/ld-products/27964/"
         ]
 
         for url in urls:
