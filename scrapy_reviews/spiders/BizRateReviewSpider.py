@@ -43,7 +43,7 @@ class BizRateReviewSpider(scrapy.Spider):
         review["would_shop_here_again"] = self._extract_score(
             rating_scores.xpath("p[@class='rating'][2]/span[1]/text()").extract_first())
         review["likelihood_to_recommend"] = self._extract_score(
-            rating_scores.xpath("p[@class='rating'][2]/span[1]/text()").extract_first())
+            rating_scores.xpath("p[@class='rating'][3]/span[1]/text()").extract_first())
 
         rating_site_items = store_ratings.xpath("div[3]/div[2]/div[1]/div/div[@class='ratings']/span/@title").extract()
         rating_site_scores = [self._extract_rating(s) for s in rating_site_items]
