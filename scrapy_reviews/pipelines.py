@@ -5,10 +5,13 @@
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
 import re
+import datetime
 import simplejson
 import csv
 import logging
+import pymongo as mongo
 from stemming.porter2 import stem
+from scrapy.exceptions import DropItem
 from scrapy.utils.serialize import ScrapyJSONEncoder
 from .items import KBBReviewItem, EdmundsReviewItem, OrbitzReviewItem
 
@@ -86,6 +89,31 @@ class StemmingReviewsPipeline(object):
         for i in range(len(item["content"])):
             word = item["content"][i]
             item["content"][i] = stem(word)
+        return item
+
+
+class SaveToMongoDb(object):
+    """ Save items into MongoDB as documents. """
+
+    def __init__(self):
+        self.client = None
+        self.db_name = 'consumerReviews'
+        self.doc_collection_name = 'bizrate_overstock'
+        self.doc_collection = None
+
+    def open_spider(self, spider):
+        self.client = mongo.MongoClient()
+        spider.logger.info('Open connection to MongoDB.')
+        self.doc_collection = self.client[self.db_name][self.doc_collection_name]
+        spider.logger.info('Use database [{}], collection [{}]'.format(self.db_name, self.doc_collection_name))
+
+    def close_spider(self, spider):
+        self.client.close()
+        spider.logger.info('Close connection to MongoDB.')
+
+    def process_item(self, item, spider):
+        result = self.doc_collection.insert_one(item)
+        spider.logger.info('Item inserted as {}.'.format(result.inserted_id))
         return item
 
 

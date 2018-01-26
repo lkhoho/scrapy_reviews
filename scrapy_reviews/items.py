@@ -8,6 +8,12 @@
 import scrapy
 
 
+class MongoDBItem(scrapy.Item):
+    _id = scrapy.Field()
+    scraped_date = scrapy.Field()
+    tags = scrapy.Field()
+
+
 class BasicReviewItem(scrapy.Item):
     """ Review containing author, date, title, content. """
 
@@ -198,7 +204,7 @@ class TripAdvisorReviewItem(BasicReviewItem):
     helpful_votes = scrapy.Field()
 
 
-class BizRateReviewItem(BasicReviewItem):
+class BizRateReviewItem(BasicReviewItem, MongoDBItem):
     """ BizRate store review info. """
 
     def __init__(self):

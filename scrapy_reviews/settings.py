@@ -66,7 +66,8 @@ ROBOTSTXT_OBEY = True
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    'scrapy_reviews.pipelines.SaveRawItemPipeline': 100,
+    'scrapy_reviews.pipelines.SaveToMongoDb': 100,
+    # 'scrapy_reviews.pipelines.SaveRawItemPipeline': 100,
     # 'scrapy_reviews.pipelines.RemoveStopwordsPipeline': 200,
     # 'scrapy_reviews.pipelines.TokenizationPipeline': 300,
     # 'scrapy_reviews.pipelines.StemmingReviewsPipeline': 400,

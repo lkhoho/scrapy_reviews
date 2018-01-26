@@ -1,10 +1,11 @@
-import datetime
+from datetime import datetime
 import scrapy
 from scrapy_reviews.items import BizRateReviewItem
 
 
 class BizRateReviewSpider(scrapy.Spider):
     name = "bizrate_overstock"
+    DATE_FORMAT = '%Y-%m-%d'
 
     def start_requests(self):
         urls = [
@@ -32,6 +33,8 @@ class BizRateReviewSpider(scrapy.Spider):
     def process_details(self, response):
         self.logger.info("Parsing review details: " + response.url)
         review = BizRateReviewItem()
+        review['scraped_date'] = datetime.now().strftime(BizRateReviewSpider.DATE_FORMAT)
+        review['tags'] = ['bizrate', 'overstock']
         store_ratings = response.xpath("//*[@id='store_ratings']")
 
         review["author"] = store_ratings.xpath("div[@class='authorship']/p[@class='author']/text()").extract_first()
@@ -90,4 +93,4 @@ class BizRateReviewSpider(scrapy.Spider):
 
     def _reformat_date(self, date_str: str) -> str:
         # Oct 29, 2017
-        return datetime.datetime.strptime(date_str, "%b %d, %Y").date().strftime("%Y%m%d")
+        return datetime.strptime(date_str, "%b %d, %Y").date().strftime(BizRateReviewSpider.DATE_FORMAT)
